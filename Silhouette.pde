@@ -6,6 +6,7 @@ private final float YSHIFT = 73*scale;
 private final int GRID_SIZE = 6;
 
 private ArrayList<PVector> board = new ArrayList<PVector>();
+private ArrayList<PVector> stack = new ArrayList<PVector>();
 private int[][][] level;
 private int levelNo = -1;
 private int boardMax = 6;
@@ -237,13 +238,27 @@ void drawBoard() {
     line(0,0,-50,0);
     line(0,0,-20,-20);
     line(0,0,-20, 20);
+    translate(-XSHIFT*24,0);
   }
-  resetMatrix();
+  
   // draw menu button
-  rect(width/2,NAV_HEIGHT,50,50);
-  line(width/2,NAV_HEIGHT-5,width/2-25,NAV_HEIGHT-25);
-  line(width/2,NAV_HEIGHT-5,width/2+25,NAV_HEIGHT-25);
-  line(width/2,NAV_HEIGHT-5,width/2,NAV_HEIGHT+25);
+  translate(XSHIFT*12,0);
+  rect(0,0,50,50);
+  line(0,-5,-25,-25);
+  line(0,-5,25,-25);
+  line(0,-5,0,25);
+  
+  // draw clear button
+  translate(-85,0);
+  line(-15,-15,15,15);
+  line(-15,15,15,-15);
+  
+  // draw undo button
+  translate(160, 0); 
+  line(8, -20, 0, -15);
+  line(0, -15, 5, -5);
+  arc(0, 0, 35, 30, 3*HALF_PI, 5*HALF_PI);
+  resetMatrix();
   
   // draw current board =====================
   translate(width/2-XSHIFT, height*2/3); // "origin" to pop back to
@@ -439,30 +454,50 @@ void rotateBoard(boolean anti) {
   ArrayList<PVector> tempBoard = new ArrayList<PVector>();
   for (int x=0; x<GRID_SIZE/2; x++) {
     for (int z=x; z<n-x; z++) {
-      for (int y=0; y<GRID_SIZE; y++) {
+      for (int y=0; y<GRID_SIZE; y++) { // for each layer, do the x<->z rotation
         PVector a = new PVector(x,y,z);
         PVector b = new PVector(z,y,n-x);
         PVector c = new PVector(n-x,y,n-z);
         PVector d = new PVector(n-z,y,x);
         if (board.contains(a)) {
           board.remove(a);
-          if (anti) tempBoard.add(b);
-          else tempBoard.add(d);
+          if (anti) {
+            tempBoard.add(b);
+            stack.set(stack.indexOf(a), b);
+          } else {
+            tempBoard.add(d);
+            stack.set(stack.indexOf(a), d);
+          }
         }
         if (board.contains(b)) {
           board.remove(b);
-          if (anti) tempBoard.add(c);
-          else tempBoard.add(a);
+          if (anti) {
+            tempBoard.add(c);
+            stack.set(stack.indexOf(b), c);
+          } else {
+            tempBoard.add(a);
+            stack.set(stack.indexOf(b), a);
+          }
         }
         if (board.contains(c)) {
           board.remove(c);
-          if (anti) tempBoard.add(d);
-          else tempBoard.add(b);
+          if (anti) {
+            tempBoard.add(d);
+            stack.set(stack.indexOf(c), d);
+          } else {
+            tempBoard.add(b);
+            stack.set(stack.indexOf(c), b);
+          }
         }
         if (board.contains(d)) {
           board.remove(d);
-          if (anti) tempBoard.add(a);
-          else tempBoard.add(c);
+          if (anti) {
+            tempBoard.add(a);
+            stack.set(stack.indexOf(d), a);
+          } else {
+            tempBoard.add(c);
+            stack.set(stack.indexOf(d), c);
+          }
         }
       }
     }
@@ -576,19 +611,28 @@ void mousePressed() {
       }
       board.clear();
       loadLevel();
+    // clicked the clear button
+    } else if (abs(mouseX-(width/2-85)) < 15 && abs(mouseY-NAV_HEIGHT) < 15) { 
+      board.clear();
     // clicked the menu button
     } else if (abs(mouseX-width/2) < 35 && abs(mouseY-NAV_HEIGHT) < 35) { 
       goMenu();
+    // clicked the undo button
+    } else if (abs(mouseX-(width/2+93)) < 15 && abs(mouseY-NAV_HEIGHT) < 20) { 
+      if (!stack.isEmpty()) board.remove(stack.remove(stack.size()-1));
     // clicked the next button
     } else if (isFinished && abs(mouseX-(width/2+XSHIFT*12-25)) < 25 && abs(mouseY-NAV_HEIGHT) < 20) { 
-      levelNo++;
-      if (levelNo > 9) { // boundary check if too high
-        levelNo = 0;
-        diff++;
-        if (diff == 3) goMenu();
+      if (diff == 2 && levelNo == 9) { // reached end of prepared levels
+        goMenu();
+      } else {
+        levelNo++;
+        if (levelNo > 9) { // boundary check if too high
+          levelNo = 0;
+          diff++;
+        }
+        board.clear();
+        loadLevel();
       }
-      board.clear();
-      loadLevel();
     }
     
     PVector point = new PVector(mouseX-width/2, mouseY-(height*2/3+YSHIFT));
@@ -604,6 +648,7 @@ void mousePressed() {
           if (isOnLeft(left, point)) { // check if user clicked a left side
             if (board.contains(boxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(boxPos);
+              stack.remove(boxPos);
               return;
             }
             PVector newBoxPos = new PVector(i,j,k+1);
@@ -611,6 +656,7 @@ void mousePressed() {
               if ((board.contains(boxPos)) && (i<GRID_SIZE && j<GRID_SIZE && k<GRID_SIZE-1)) { 
                   // if we're able to stack the box on something and within bounds
                   board.add(newBoxPos);
+                  stack.add(newBoxPos);
                   return;
               }
             }
@@ -619,6 +665,7 @@ void mousePressed() {
           if (isOnRight(middle, point)) { // check if user clicked a right side
             if (board.contains(boxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(boxPos);
+              stack.remove(boxPos);
               return;
             }
             PVector newBoxPos = new PVector(i+1,j,k);
@@ -626,6 +673,7 @@ void mousePressed() {
               if (board.contains(boxPos) && (i<GRID_SIZE-1 && j<GRID_SIZE && k<GRID_SIZE)) { 
                   // if we're able to stack the box on something and within bounds\
                   board.add(newBoxPos);
+                  stack.add(newBoxPos);
                   return;
               }
             }
@@ -635,11 +683,13 @@ void mousePressed() {
             PVector oldBoxPos = new PVector(i,j-1,k);
             if (board.contains(oldBoxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(oldBoxPos);
+              stack.remove(oldBoxPos);
               return;
             } else if (!board.contains(boxPos) && mouseButton == LEFT) { // if box isn't already there and user wants to add
               if ((j==0 || board.contains(oldBoxPos)) && (i<GRID_SIZE && j<GRID_SIZE && k<GRID_SIZE)) { 
                 // if we're able to stack the box on something and within bounds
                 board.add(boxPos);
+                stack.add(boxPos);
                 return;
               }
             }
