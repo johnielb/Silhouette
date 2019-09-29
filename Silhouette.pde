@@ -340,7 +340,7 @@ boolean drawAnswers() {
   boolean isCorrect = true;
   
   // draw left board and grid
-  fill(220);
+  fill(210);
   translate(XSHIFT, YSHIFT+ZSHIFT*1.5);
   translateX(-GRID_SIZE);
   stroke(50);
@@ -360,12 +360,12 @@ boolean drawAnswers() {
       boolean found = false;
       for (int x=0; x<GRID_SIZE; x++) {
         if (board.contains(new PVector(x,y,z))) {
-          fill(150);
+          fill(140);
           found = true;
           break;
         }
         else {
-          fill(180);
+          fill(170);
         }
       }
       // if it's an answer
@@ -387,7 +387,7 @@ boolean drawAnswers() {
   popMatrix();
   
   // draw right board and grid
-  fill(220);
+  fill(210);
   translateZ(-GRID_SIZE);
   translateX(GRID_SIZE);
   strokeWeight(1);
@@ -405,11 +405,11 @@ boolean drawAnswers() {
       boolean found = false;
       for (int z=0; z<GRID_SIZE; z++) {
         if (board.contains(new PVector(x,y,z))) {
-          fill(150);
+          fill(140);
           found = true;
           break;
         } else {
-          fill(180);
+          fill(170);
         }
       }
       // if it's an answer
