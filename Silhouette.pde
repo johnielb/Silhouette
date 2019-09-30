@@ -6,7 +6,7 @@ private final float YSHIFT = 73*scale;
 private final int GRID_SIZE = 6;
 
 private ArrayList<PVector> board = new ArrayList<PVector>();
-private ArrayList<PVector> stack = new ArrayList<PVector>();
+private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>();
 private int[][][] level;
 private int levelNo = -1;
 private int boardMax = 6;
@@ -460,43 +460,51 @@ void rotateBoard(boolean anti) {
         PVector c = new PVector(n-x,y,n-z);
         PVector d = new PVector(n-z,y,x);
         if (board.contains(a)) {
+          int i = stack.indexOf(new BoxRecord(a, true));
+          if (i<0) i = stack.indexOf(new BoxRecord(a, false));
           board.remove(a);
           if (anti) {
             tempBoard.add(b);
-            stack.set(stack.indexOf(a), b);
+            stack.set(i, new BoxRecord(b, stack.get(i).isRemoval()));
           } else {
             tempBoard.add(d);
-            stack.set(stack.indexOf(a), d);
+            stack.set(i, new BoxRecord(d, stack.get(i).isRemoval()));
           }
         }
         if (board.contains(b)) {
+          int i = stack.indexOf(new BoxRecord(b, true));
+          if (i<0) i = stack.indexOf(new BoxRecord(b, false));
           board.remove(b);
           if (anti) {
             tempBoard.add(c);
-            stack.set(stack.indexOf(b), c);
+            stack.set(i, new BoxRecord(c, stack.get(i).isRemoval()));
           } else {
             tempBoard.add(a);
-            stack.set(stack.indexOf(b), a);
+            stack.set(i, new BoxRecord(a, stack.get(i).isRemoval()));
           }
         }
         if (board.contains(c)) {
+          int i = stack.indexOf(new BoxRecord(c, true));
+          if (i<0) i = stack.indexOf(new BoxRecord(c, false));
           board.remove(c);
           if (anti) {
             tempBoard.add(d);
-            stack.set(stack.indexOf(c), d);
+            stack.set(i, new BoxRecord(d, stack.get(i).isRemoval()));
           } else {
             tempBoard.add(b);
-            stack.set(stack.indexOf(c), b);
+            stack.set(i, new BoxRecord(b, stack.get(i).isRemoval()));
           }
         }
         if (board.contains(d)) {
+          int i = stack.indexOf(new BoxRecord(d, true));
+          if (i<0) i = stack.indexOf(new BoxRecord(d, false));
           board.remove(d);
           if (anti) {
             tempBoard.add(a);
-            stack.set(stack.indexOf(d), a);
+            stack.set(i, new BoxRecord(a, stack.get(i).isRemoval()));
           } else {
             tempBoard.add(c);
-            stack.set(stack.indexOf(d), c);
+            stack.set(i, new BoxRecord(c, stack.get(i).isRemoval()));
           }
         }
       }
@@ -613,12 +621,21 @@ void mousePressed() {
     // clicked the clear button
     } else if (abs(mouseX-(width/2-85)) < 15 && abs(mouseY-NAV_HEIGHT) < 15) { 
       board.clear();
+      stack.clear();
     // clicked the menu button
     } else if (abs(mouseX-width/2) < 35 && abs(mouseY-NAV_HEIGHT) < 35) { 
       goMenu();
     // clicked the undo button
     } else if (abs(mouseX-(width/2+93)) < 15 && abs(mouseY-NAV_HEIGHT) < 20) { 
-      if (!stack.isEmpty()) board.remove(stack.remove(stack.size()-1));
+      if (!stack.isEmpty()) {
+        BoxRecord todo = stack.remove(stack.size()-1);
+        PVector pos = todo.getPosition();
+        if (todo.isRemoval()) {
+          board.add(pos);
+        } else {
+          board.remove(pos);
+        }
+      }
     // clicked the next button
     } else if (isFinished && abs(mouseX-(width/2+XSHIFT*12-25)) < 25 && abs(mouseY-NAV_HEIGHT) < 20) { 
       if (diff == 2 && levelNo == 9) { // reached end of prepared levels
@@ -647,7 +664,7 @@ void mousePressed() {
           if (isOnLeft(left, point)) { // check if user clicked a left side
             if (board.contains(boxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(boxPos);
-              stack.remove(boxPos);
+              stack.add(new BoxRecord(boxPos, true));
               return;
             }
             PVector newBoxPos = new PVector(i,j,k+1);
@@ -655,7 +672,7 @@ void mousePressed() {
               if ((board.contains(boxPos)) && (i<GRID_SIZE && j<GRID_SIZE && k<GRID_SIZE-1)) { 
                   // if we're able to stack the box on something and within bounds
                   board.add(newBoxPos);
-                  stack.add(newBoxPos);
+                  stack.add(new BoxRecord(newBoxPos, false));
                   return;
               }
             }
@@ -664,7 +681,7 @@ void mousePressed() {
           if (isOnRight(middle, point)) { // check if user clicked a right side
             if (board.contains(boxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(boxPos);
-              stack.remove(boxPos);
+              stack.add(new BoxRecord(boxPos, true));
               return;
             }
             PVector newBoxPos = new PVector(i+1,j,k);
@@ -672,7 +689,7 @@ void mousePressed() {
               if (board.contains(boxPos) && (i<GRID_SIZE-1 && j<GRID_SIZE && k<GRID_SIZE)) { 
                   // if we're able to stack the box on something and within bounds\
                   board.add(newBoxPos);
-                  stack.add(newBoxPos);
+                  stack.add(new BoxRecord(newBoxPos, false));
                   return;
               }
             }
@@ -682,13 +699,13 @@ void mousePressed() {
             PVector oldBoxPos = new PVector(i,j-1,k);
             if (board.contains(oldBoxPos) && mouseButton == RIGHT) { // if the box exists and user wants to delete
               board.remove(oldBoxPos);
-              stack.remove(oldBoxPos);
+              stack.add(new BoxRecord(oldBoxPos, true));
               return;
             } else if (!board.contains(boxPos) && mouseButton == LEFT) { // if box isn't already there and user wants to add
               if ((j==0 || board.contains(oldBoxPos)) && (i<GRID_SIZE && j<GRID_SIZE && k<GRID_SIZE)) { 
                 // if we're able to stack the box on something and within bounds
                 board.add(boxPos);
-                stack.add(boxPos);
+                stack.add(new BoxRecord(boxPos, false));
                 return;
               }
             }
