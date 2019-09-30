@@ -5,16 +5,17 @@ private final float ZSHIFT = 21*scale;
 private final float YSHIFT = 73*scale;
 private final int GRID_SIZE = 6;
 
-private ArrayList<PVector> board = new ArrayList<PVector>();
-private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>();
-private int[][][] level;
+private ArrayList<PVector> board = new ArrayList<PVector>();     // ordered based on viewing z-position
+private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>(); // ordered based on creation
+private int[][][] level;    // answer board
 private int levelNo = -1;
 private int boardMax = 6;
 private int boardMin = 6;
-private int screen = 0;
-private int diff = 0;
+private int screen = 0;     // 0 for menu, 1 for game    
+private int diff = 0;       // 0 for easy, 1 medium, 2 hard
 private boolean isFinished = false;
 
+// constants that determine where buttons are placed
 private float LVL_MIDDLE;
 private float LVL_LEFT;
 private float LVL_RIGHT;
@@ -113,6 +114,7 @@ void setup() {
   menu = createFont("light.ttf",84); 
   game = createFont("light.ttf",48); 
   
+  // set constants after width/height determined
   LVL_MIDDLE = width*3/4;
   LVL_LEFT = LVL_MIDDLE-120;
   LVL_RIGHT = LVL_MIDDLE+120;
@@ -202,7 +204,6 @@ void drawMenu() {
 }
 
 void drawBoard() {
-  
   // draw current objectives/board info ======
   String cubes = "cubes   "+board.size();
   String min = "min   "+boardMin;
@@ -351,6 +352,10 @@ void drawBox(boolean isPlatform) {
   drawPgram(new PVector(xScaled,zScaled*2), new PVector(xScaled, -zScaled), new PVector(0, yScaled-zScaled));
 }
 
+/**
+* Draws two answer boards to the side of the platform
+* @return if the answer board silhouette has been constructed
+*/
 boolean drawAnswers() {
   boolean isCorrect = true;
   
@@ -371,7 +376,7 @@ boolean drawAnswers() {
   pushMatrix();
   for (int y=0; y<GRID_SIZE; y++) {
     for (int z=0; z<GRID_SIZE; z++) {
-      // find if box occludes
+      // find if box occludes, set the fill beforehand
       boolean found = false;
       for (int x=0; x<GRID_SIZE; x++) {
         if (board.contains(new PVector(x,y,z))) {
@@ -383,12 +388,13 @@ boolean drawAnswers() {
           fill(170);
         }
       }
-      // if it's an answer
+      
+      // if it's an answer, draw with corresponding fill
       if (level[0][y][z] == 1) {
         if (!found) isCorrect=false;
         drawPgram(new PVector(0,0), new PVector(-XSHIFT, ZSHIFT), new PVector(0, -YSHIFT));
-      } else if (found) { // if there's a block where we don't want one
-        isCorrect=false;
+      } else if (found) { // if there's a block where we don't want one, draw X
+        isCorrect = false;
         strokeWeight(1);
         line(0, 0, -XSHIFT, ZSHIFT-YSHIFT);
         line(0, -YSHIFT, -XSHIFT, ZSHIFT);
@@ -430,21 +436,36 @@ boolean drawAnswers() {
       // if it's an answer
       if (level[1][y][x] == 1) {
         if (!found) isCorrect=false;
-          drawPgram(new PVector(0,0), new PVector(XSHIFT, ZSHIFT), new PVector(0, -YSHIFT));
-        } else if (found) {
-          isCorrect=false;
-          strokeWeight(1);
-          line(0, 0, XSHIFT, ZSHIFT-YSHIFT);
-          line(0, -YSHIFT, XSHIFT, ZSHIFT);
-          strokeWeight(0.1);
-        }
-        translateX(1);
+        drawPgram(new PVector(0,0), new PVector(XSHIFT, ZSHIFT), new PVector(0, -YSHIFT));
+      } else if (found) {
+        isCorrect=false;
+        strokeWeight(1);
+        line(0, 0, XSHIFT, ZSHIFT-YSHIFT);
+        line(0, -YSHIFT, XSHIFT, ZSHIFT);
+        strokeWeight(0.1);
+      }
+      translateX(1);
     }
     translateX(-GRID_SIZE);
     translateY(1);
   }
   
   return isCorrect;
+}
+
+/**
+* Do one swap of PVector oldPos to newPos, putting it inside a temporary board List
+* e.g. ..y. x -> y clockwise
+*      x..b a -> b anticlockwise
+*      .ji. i -> j clockwise
+*      ..a.
+*/
+void singleRotate(PVector oldPos, PVector newPos, ArrayList<PVector> temp) {
+  int i = stack.indexOf(new BoxRecord(oldPos, true));
+  if (i<0) i = stack.indexOf(new BoxRecord(oldPos, false));
+  board.remove(oldPos);
+  temp.add(newPos);
+  stack.set(i, new BoxRecord(newPos, stack.get(i).isRemoval()));
 }
 
 /** Rotates construction and answer board */
@@ -460,52 +481,20 @@ void rotateBoard(boolean anti) {
         PVector c = new PVector(n-x,y,n-z);
         PVector d = new PVector(n-z,y,x);
         if (board.contains(a)) {
-          int i = stack.indexOf(new BoxRecord(a, true));
-          if (i<0) i = stack.indexOf(new BoxRecord(a, false));
-          board.remove(a);
-          if (anti) {
-            tempBoard.add(b);
-            stack.set(i, new BoxRecord(b, stack.get(i).isRemoval()));
-          } else {
-            tempBoard.add(d);
-            stack.set(i, new BoxRecord(d, stack.get(i).isRemoval()));
-          }
+          if (anti) singleRotate(a,b,tempBoard);
+          else singleRotate(a,d,tempBoard);
         }
         if (board.contains(b)) {
-          int i = stack.indexOf(new BoxRecord(b, true));
-          if (i<0) i = stack.indexOf(new BoxRecord(b, false));
-          board.remove(b);
-          if (anti) {
-            tempBoard.add(c);
-            stack.set(i, new BoxRecord(c, stack.get(i).isRemoval()));
-          } else {
-            tempBoard.add(a);
-            stack.set(i, new BoxRecord(a, stack.get(i).isRemoval()));
-          }
+          if (anti) singleRotate(b,c,tempBoard);
+          else singleRotate(b,a,tempBoard);
         }
         if (board.contains(c)) {
-          int i = stack.indexOf(new BoxRecord(c, true));
-          if (i<0) i = stack.indexOf(new BoxRecord(c, false));
-          board.remove(c);
-          if (anti) {
-            tempBoard.add(d);
-            stack.set(i, new BoxRecord(d, stack.get(i).isRemoval()));
-          } else {
-            tempBoard.add(b);
-            stack.set(i, new BoxRecord(b, stack.get(i).isRemoval()));
-          }
+          if (anti) singleRotate(c,d,tempBoard);
+          else singleRotate(c,b,tempBoard);
         }
         if (board.contains(d)) {
-          int i = stack.indexOf(new BoxRecord(d, true));
-          if (i<0) i = stack.indexOf(new BoxRecord(d, false));
-          board.remove(d);
-          if (anti) {
-            tempBoard.add(a);
-            stack.set(i, new BoxRecord(a, stack.get(i).isRemoval()));
-          } else {
-            tempBoard.add(c);
-            stack.set(i, new BoxRecord(c, stack.get(i).isRemoval()));
-          }
+          if (anti) singleRotate(d,a,tempBoard);
+          else singleRotate(d,c,tempBoard);
         }
       }
     }
@@ -546,6 +535,9 @@ void rotateBoard(boolean anti) {
   }
 }
 
+/**
+* Load level based on the currently stored levelNo
+*/
 void loadLevel() {
   if (diff == 0) {
     level = Levels.getEasyBoard(levelNo);
@@ -562,7 +554,11 @@ void loadLevel() {
   }
 }
 
+/**
+* Reset game board and show menu
+*/
 void goMenu() {
+  if (screen == 0) throw new RuntimeException("Screen already at menu.");
   screen = 0;
   board.clear();
   level = null;
