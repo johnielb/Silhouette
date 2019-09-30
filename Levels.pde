@@ -1,5 +1,5 @@
-class Levels {
-  public int[][][] getEasyBoard(int n) {
+static class Levels {
+  public static int[][][] getEasyBoard(int n) {
     switch (n) {
       case 0:
         return new int[][][] {
@@ -195,7 +195,7 @@ class Levels {
         throw new RuntimeException("Level loading broken.");        
     }
   }
-  public int[] getEasyInfo(int n) {
+  public static int[] getEasyInfo(int n) {
     switch (n) {
       case 0:
         return new int[] {6,6};
@@ -221,7 +221,7 @@ class Levels {
         throw new RuntimeException("Level loading broken.");
     }
   }
-  public int[][][] getMediumBoard(int n) {
+  public static int[][][] getMediumBoard(int n) {
     switch (n) {
       case 0:
         return new int[][][] {
@@ -417,7 +417,7 @@ class Levels {
         throw new RuntimeException("Level loading broken.");        
     }
   }
-  public int[] getMediumInfo(int n) {
+  public static int[] getMediumInfo(int n) {
     switch (n) {
       case 0:
         return new int[] {7,15};
@@ -443,7 +443,7 @@ class Levels {
         throw new RuntimeException("Level loading broken.");
     }
   }
-  public int[][][] getHardBoard(int n) {
+  public static int[][][] getHardBoard(int n) {
     switch (n) {
       case 0:
         return new int[][][] {
@@ -639,7 +639,7 @@ class Levels {
         throw new RuntimeException("Level loading broken.");        
     }
   }
-  public int[] getHardInfo(int n) {
+  public static int[] getHardInfo(int n) {
     switch (n) {
       case 0:
         return new int[] {16,16};

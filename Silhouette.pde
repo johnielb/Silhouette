@@ -539,19 +539,18 @@ void rotateBoard(boolean anti) {
 }
 
 void loadLevel() {
-  Levels loader = new Levels();
   if (diff == 0) {
-    level = loader.getEasyBoard(levelNo);
-    boardMin = loader.getEasyInfo(levelNo)[0];
-    boardMax = loader.getEasyInfo(levelNo)[1];
+    level = Levels.getEasyBoard(levelNo);
+    boardMin = Levels.getEasyInfo(levelNo)[0];
+    boardMax = Levels.getEasyInfo(levelNo)[1];
   } else if (diff == 1) {
-    level = loader.getMediumBoard(levelNo);
-    boardMin = loader.getMediumInfo(levelNo)[0];
-    boardMax = loader.getMediumInfo(levelNo)[1];
+    level = Levels.getMediumBoard(levelNo);
+    boardMin = Levels.getMediumInfo(levelNo)[0];
+    boardMax = Levels.getMediumInfo(levelNo)[1];
   } else if (diff == 2) {
-    level = loader.getHardBoard(levelNo);
-    boardMin = loader.getHardInfo(levelNo)[0];
-    boardMax = loader.getHardInfo(levelNo)[1];
+    level = Levels.getHardBoard(levelNo);
+    boardMin = Levels.getHardInfo(levelNo)[0];
+    boardMax = Levels.getHardInfo(levelNo)[1];
   }
 }
 
