@@ -13,6 +13,7 @@ private int boardMax = 6;
 private int boardMin = 6;
 private int screen = 0;     // 0 for menu, 1 for game    
 private int diff = 0;       // 0 for easy, 1 medium, 2 hard
+private float hue = 150;
 private boolean isFinished = false;
 
 // constants that determine where buttons are placed
@@ -105,10 +106,23 @@ void drawPgram(PVector o, PVector a, PVector b) {
   endShape(CLOSE);
 }
 
+void setBackground(int val) {
+  background(hue, 178-(val/2), 140+(val/2));
+}
+
+void setFill(int val) {
+  fill(hue, 178-(val/2), 140+(val/2));
+}
+
+void setStroke(int val) {
+  stroke(hue, 178-(val/2), 140+(val/2));
+}
+
 void setup() {
   size(1300,1000); // minimum 1000x900
   strokeWeight(0.1);
   rectMode(CENTER);
+  colorMode(HSB);
   textAlign(CENTER, CENTER);
   title = createFont("thin.ttf",120);
   menu = createFont("light.ttf",84); 
@@ -125,9 +139,9 @@ void setup() {
 }
 
 void draw() {
-  if (diff == 0) background(240);
-  else if (diff == 1) background(230);
-  else if (diff == 2) background(220);
+  if (diff == 0) setBackground(240);
+  else if (diff == 1) setBackground(230);
+  else if (diff == 2) setBackground(220);
   switch (screen) {
     case 0:
       drawMenu();
@@ -148,15 +162,15 @@ void drawMenu() {
   float topOffset = 100;
   
   // draw logo
-  fill(140);
+  setFill(140);
   textFont(title);
   text("Silhouette.", width/2, topOffset);
   
   
   // draw left ===================
-  if (diff == 0) fill(230);
-  else if (diff == 1) fill(200);
-  else if (diff == 2) fill(170);
+  if (diff == 0) setFill(230);
+  else if (diff == 1) setFill(200);
+  else if (diff == 2) setFill(170);
   beginShape();
     vertex(0,topOffset);
     vertex(width/2, topOffset+height/3);
@@ -166,21 +180,21 @@ void drawMenu() {
   
   // draw difficulty selector, darken currently selected
   textFont(menu);
-  if (diff == 0) fill(20);
-  else fill(100);
+  if (diff == 0) setFill(20);
+  else setFill(100);
   text("Easy", width/4, height/2);
-  if (diff == 1) fill(20);
-  else fill(100);
+  if (diff == 1) setFill(20);
+  else setFill(100);
   text("Medium", width/4, height/2+150);
-  if (diff == 2) fill(20);
-  else fill(100);
+  if (diff == 2) setFill(20);
+  else setFill(100);
   text("Hard", width/4, height/2+300);
   
   
   // draw right ==================
-  if (diff == 0) fill(220);
-  else if (diff == 1) fill(180);
-  else if (diff == 2) fill(150);
+  if (diff == 0) setFill(220);
+  else if (diff == 1) setFill(180);
+  else if (diff == 2) setFill(150);
   beginShape();
     vertex(width,topOffset);
     vertex(width/2, topOffset+height/3);
@@ -189,7 +203,7 @@ void drawMenu() {
   endShape(CLOSE);
   
   // draw level numbers
-  fill(80);
+  setFill(80);
   textFont(menu);
   text("1", LVL_LEFT, LVL_R1);
   text("2", LVL_MIDDLE, LVL_R1);
@@ -211,23 +225,23 @@ void drawBoard() {
   textFont(game);
   float textY = height/5+20;
   
-  if (isFinished) fill(0); // if objective met, darken
-  else fill(150);
+  if (isFinished) setFill(0); // if objective met, darken
+  else setFill(150);
   text(cubes, width/4, textY);
   
-  if (isFinished && board.size() == boardMin) fill(0);
-  else fill(150);
+  if (isFinished && board.size() == boardMin) setFill(0);
+  else setFill(150);
   text(min, width/2, textY);
   
-  if (isFinished && board.size() == boardMax) fill(0);
-  else fill(150);
+  if (isFinished && board.size() == boardMax) setFill(0);
+  else setFill(150);
   text(max, width*3/4, textY);
   
   
   // draw navigation bar ====================
   noFill();
   strokeWeight(2);
-  stroke(100);
+  setStroke(100);
   translate(width/2-XSHIFT*12, NAV_HEIGHT);
   if (diff != 0 || levelNo != 0) { // draw left button if not the very 1st level
     line(0,0,20,-20);
@@ -277,7 +291,7 @@ void drawBoard() {
   
   // draw grid
   pushMatrix();
-  stroke(50);
+  setStroke(50);
   translate(XSHIFT,YSHIFT);
   for (int i=1; i<GRID_SIZE; i++) {
     line(-XSHIFT*i, ZSHIFT*i, XSHIFT*(6-i), ZSHIFT*(i+6));
@@ -305,7 +319,7 @@ void drawBoard() {
   translateY(-3);
   noFill();
   strokeWeight(3);
-  stroke(150);
+  setStroke(150);
   line(0, 0, -8, 10);
   line(0, 0, 10, 8);
   arc(30, 0, 60, 60, HALF_PI, PI);
@@ -314,7 +328,7 @@ void drawBoard() {
   translateX(6);
   noFill();
   strokeWeight(3);
-  stroke(150);
+  setStroke(150);
   line(0, 0, -10, 8);
   line(0, 0, 8, 10);
   arc(-30, 0, 60, 60, 0, HALF_PI);
@@ -322,33 +336,30 @@ void drawBoard() {
 }
 
 void drawBox(boolean isPlatform) {
-  stroke(50);
+  setStroke(50);
   float xScaled = XSHIFT;
   float yScaled = YSHIFT+ZSHIFT;
   float zScaled = ZSHIFT;
   if (isPlatform) {
-    stroke(1);
     xScaled = xScaled * 6;
     zScaled = zScaled * 6;
-  } else {
-    stroke(0.1);
   }
   
   // TOP
-  fill(240);
+  setFill(240);
   drawPgram(new PVector(xScaled,0), new PVector(-xScaled, zScaled), new PVector(xScaled, zScaled));
   
   // LEFT
-  fill(180);
+  setFill(180);
   if (isPlatform) {
     translate(0,32*scale);
-    fill(219);
+    setFill(219);
   }
   drawPgram(new PVector(0,zScaled), new PVector(xScaled, zScaled), new PVector(0, yScaled-zScaled));
   
   // RIGHT
-  fill(140);
-  if (isPlatform) fill(160);
+  setFill(140);
+  if (isPlatform) setFill(160);
   drawPgram(new PVector(xScaled,zScaled*2), new PVector(xScaled, -zScaled), new PVector(0, yScaled-zScaled));
 }
 
@@ -360,10 +371,10 @@ boolean drawAnswers() {
   boolean isCorrect = true;
   
   // draw left board and grid
-  fill(210);
+  setFill(210);
   translate(XSHIFT, YSHIFT+ZSHIFT*1.5);
   translateX(-GRID_SIZE);
-  stroke(50);
+  setStroke(50);
   strokeWeight(1);
   drawPgram(new PVector(0,0), new PVector(-XSHIFT*GRID_SIZE,ZSHIFT*GRID_SIZE), new PVector(0, -GRID_SIZE*YSHIFT));
   strokeWeight(0.1);
@@ -380,12 +391,12 @@ boolean drawAnswers() {
       boolean found = false;
       for (int x=0; x<GRID_SIZE; x++) {
         if (board.contains(new PVector(x,y,z))) {
-          fill(140);
+          setFill(140);
           found = true;
           break;
         }
         else {
-          fill(170);
+          setFill(170);
         }
       }
       
@@ -408,7 +419,7 @@ boolean drawAnswers() {
   popMatrix();
   
   // draw right board and grid
-  fill(210);
+  setFill(210);
   translateZ(-GRID_SIZE);
   translateX(GRID_SIZE);
   strokeWeight(1);
@@ -426,11 +437,11 @@ boolean drawAnswers() {
       boolean found = false;
       for (int z=0; z<GRID_SIZE; z++) {
         if (board.contains(new PVector(x,y,z))) {
-          fill(140);
+          setFill(140);
           found = true;
           break;
         } else {
-          fill(170);
+          setFill(170);
         }
       }
       // if it's an answer
