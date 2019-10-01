@@ -13,7 +13,7 @@ private int boardMax = 6;
 private int boardMin = 6;
 private int screen = 0;     // 0 for menu, 1 for game    
 private int diff = 0;       // 0 for easy, 1 medium, 2 hard
-private float hue = 150;
+private float hue = 165;
 private boolean isFinished = false;
 
 // constants that determine where buttons are placed
@@ -107,15 +107,15 @@ void drawPgram(PVector o, PVector a, PVector b) {
 }
 
 void setBackground(int val) {
-  background(hue, 178-(val/2), 140+(val/2));
+  background(hue, 160-(val/2), 140+(val/2));
 }
 
 void setFill(int val) {
-  fill(hue, 178-(val/2), 140+(val/2));
+  fill(hue, 160-(val/2), 140+(val/2));
 }
 
 void setStroke(int val) {
-  stroke(hue, 178-(val/2), 140+(val/2));
+  stroke(hue, 160-(val/2), 140+(val/2));
 }
 
 void setup() {
@@ -139,9 +139,9 @@ void setup() {
 }
 
 void draw() {
-  if (diff == 0) setBackground(240);
-  else if (diff == 1) setBackground(230);
-  else if (diff == 2) setBackground(220);
+  if (diff == 0) setBackground(255);
+  else if (diff == 1) setBackground(245);
+  else if (diff == 2) setBackground(235);
   switch (screen) {
     case 0:
       drawMenu();
@@ -318,7 +318,7 @@ void drawBoard() {
   translateZ(5);
   translateY(-3);
   noFill();
-  strokeWeight(3);
+  strokeWeight(2);
   setStroke(150);
   line(0, 0, -8, 10);
   line(0, 0, 10, 8);
@@ -326,9 +326,6 @@ void drawBoard() {
   
   translateZ(-6);
   translateX(6);
-  noFill();
-  strokeWeight(3);
-  setStroke(150);
   line(0, 0, -10, 8);
   line(0, 0, 8, 10);
   arc(-30, 0, 60, 60, 0, HALF_PI);
@@ -350,16 +347,14 @@ void drawBox(boolean isPlatform) {
   drawPgram(new PVector(xScaled,0), new PVector(-xScaled, zScaled), new PVector(xScaled, zScaled));
   
   // LEFT
-  setFill(180);
+  setFill(200);
   if (isPlatform) {
     translate(0,32*scale);
-    setFill(219);
   }
   drawPgram(new PVector(0,zScaled), new PVector(xScaled, zScaled), new PVector(0, yScaled-zScaled));
   
   // RIGHT
-  setFill(140);
-  if (isPlatform) setFill(160);
+  setFill(160);
   drawPgram(new PVector(xScaled,zScaled*2), new PVector(xScaled, -zScaled), new PVector(0, yScaled-zScaled));
 }
 
@@ -371,7 +366,7 @@ boolean drawAnswers() {
   boolean isCorrect = true;
   
   // draw left board and grid
-  setFill(210);
+  setFill(230);
   translate(XSHIFT, YSHIFT+ZSHIFT*1.5);
   translateX(-GRID_SIZE);
   setStroke(50);
@@ -391,12 +386,12 @@ boolean drawAnswers() {
       boolean found = false;
       for (int x=0; x<GRID_SIZE; x++) {
         if (board.contains(new PVector(x,y,z))) {
-          setFill(140);
+          setFill(170);
           found = true;
           break;
         }
         else {
-          setFill(170);
+          setFill(190);
         }
       }
       
@@ -419,7 +414,7 @@ boolean drawAnswers() {
   popMatrix();
   
   // draw right board and grid
-  setFill(210);
+  setFill(230);
   translateZ(-GRID_SIZE);
   translateX(GRID_SIZE);
   strokeWeight(1);
@@ -437,11 +432,11 @@ boolean drawAnswers() {
       boolean found = false;
       for (int z=0; z<GRID_SIZE; z++) {
         if (board.contains(new PVector(x,y,z))) {
-          setFill(140);
+          setFill(170);
           found = true;
           break;
         } else {
-          setFill(170);
+          setFill(190);
         }
       }
       // if it's an answer
