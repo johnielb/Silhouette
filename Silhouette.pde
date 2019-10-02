@@ -13,7 +13,8 @@ private int boardMax = 6;
 private int boardMin = 6;
 private int screen = 0;     // 0 for menu, 1 for game    
 private int diff = 0;       // 0 for easy, 1 medium, 2 hard
-private float hue = 165;
+private float hue = 150;
+private boolean[][][] levelMemory = new boolean[3][10][3]; // i=difficulty, j=level, k=completed/max/min
 private boolean isFinished = false;
 
 // constants that determine where buttons are placed
@@ -107,19 +108,19 @@ void drawPgram(PVector o, PVector a, PVector b) {
 }
 
 void setBackground(int val) {
-  background(hue, 160-(val/2), 140+(val/2));
+  background(hue, 190-(val*2/3), 100+(val*2/3));
 }
 
 void setFill(int val) {
-  fill(hue, 160-(val/2), 140+(val/2));
+  fill(hue, 190-(val*2/3), 100+(val*2/3));
 }
 
 void setStroke(int val) {
-  stroke(hue, 160-(val/2), 140+(val/2));
+  stroke(hue, 190-(val*2/3), 100+(val*3/5));
 }
 
 void setup() {
-  size(1300,1000); // minimum 1000x900
+  size(1300,900); // minimum 1000x900
   strokeWeight(0.1);
   rectMode(CENTER);
   colorMode(HSB);
@@ -136,12 +137,20 @@ void setup() {
   LVL_R2 = LVL_R1+125;
   LVL_R3 = LVL_R2+125;
   NAV_HEIGHT = height/9;
+  
+  // remove after adjusting colour
+  //levelMemory[0][0][0] = true;
+  //levelMemory[0][0][1] = true;
+  //levelMemory[0][0][2] = true;
+  //levelMemory[0][1][0] = true;
+  //levelMemory[0][1][1] = true;
+  //levelMemory[0][2][0] = true;
 }
 
 void draw() {
   if (diff == 0) setBackground(255);
-  else if (diff == 1) setBackground(245);
-  else if (diff == 2) setBackground(235);
+  else if (diff == 1) setBackground(240);
+  else if (diff == 2) setBackground(230);
   switch (screen) {
     case 0:
       drawMenu();
@@ -168,9 +177,9 @@ void drawMenu() {
   
   
   // draw left ===================
-  if (diff == 0) setFill(230);
-  else if (diff == 1) setFill(200);
-  else if (diff == 2) setFill(170);
+  if (diff == 0) setFill(240);
+  else if (diff == 1) setFill(230);
+  else if (diff == 2) setFill(220);
   beginShape();
     vertex(0,topOffset);
     vertex(width/2, topOffset+height/3);
@@ -193,8 +202,8 @@ void drawMenu() {
   
   // draw right ==================
   if (diff == 0) setFill(220);
-  else if (diff == 1) setFill(180);
-  else if (diff == 2) setFill(150);
+  else if (diff == 1) setFill(210);
+  else if (diff == 2) setFill(200);
   beginShape();
     vertex(width,topOffset);
     vertex(width/2, topOffset+height/3);
@@ -205,16 +214,25 @@ void drawMenu() {
   // draw level numbers
   setFill(80);
   textFont(menu);
-  text("1", LVL_LEFT, LVL_R1);
-  text("2", LVL_MIDDLE, LVL_R1);
-  text("3", LVL_RIGHT, LVL_R1);
-  text("4", LVL_LEFT, LVL_R2);
-  text("5", LVL_MIDDLE, LVL_R2);
-  text("6", LVL_RIGHT, LVL_R2);
-  text("7", LVL_LEFT, LVL_R3);
-  text("8", LVL_MIDDLE, LVL_R3);
-  text("9", LVL_RIGHT, LVL_R3);
-  text("10", LVL_MIDDLE, LVL_R3+125);
+  drawLevelButton(0, LVL_LEFT, LVL_R1);
+  drawLevelButton(1, LVL_MIDDLE, LVL_R1);
+  drawLevelButton(2, LVL_RIGHT, LVL_R1);
+  drawLevelButton(3, LVL_LEFT, LVL_R2);
+  drawLevelButton(4, LVL_MIDDLE, LVL_R2);
+  drawLevelButton(5, LVL_RIGHT, LVL_R2);
+  drawLevelButton(6, LVL_LEFT, LVL_R3);
+  drawLevelButton(7, LVL_MIDDLE, LVL_R3);
+  drawLevelButton(8, LVL_RIGHT, LVL_R3);
+  drawLevelButton(9, LVL_MIDDLE, LVL_R3+125);
+}
+
+void drawLevelButton(int level, float x, float y) {
+  if (levelMemory[diff][level][2] && levelMemory[diff][level][1]) setFill(-100); // if completed both
+  else if (levelMemory[diff][level][2] || levelMemory[diff][level][1]) setFill(70); // if one objective completed
+  else if (levelMemory[diff][level][0]) setFill(120); // if just completed
+  else if (level == 0 || levelMemory[diff][level-1][0]) setFill(150); // if unlocked
+  else if (!levelMemory[diff][level-1][0]) setFill(190); 
+  text(level+1, x, y);
 }
 
 void drawBoard() {
@@ -225,15 +243,24 @@ void drawBoard() {
   textFont(game);
   float textY = height/5+20;
   
-  if (isFinished) setFill(0); // if objective met, darken
+  if (isFinished || levelMemory[diff][levelNo][0]) {
+    setFill(0); // if objective met, darken
+    levelMemory[diff][levelNo][0] = true;
+  }
   else setFill(150);
   text(cubes, width/4, textY);
   
-  if (isFinished && board.size() == boardMin) setFill(0);
+  if ((isFinished && board.size() == boardMin) || levelMemory[diff][levelNo][1]) {
+    setFill(0);
+    levelMemory[diff][levelNo][1] = true;
+  }
   else setFill(150);
   text(min, width/2, textY);
   
-  if (isFinished && board.size() == boardMax) setFill(0);
+  if ((isFinished && board.size() == boardMax) || levelMemory[diff][levelNo][2]) {
+    setFill(0);
+    levelMemory[diff][levelNo][2] = true;
+  }
   else setFill(150);
   text(max, width*3/4, textY);
   
@@ -248,7 +275,7 @@ void drawBoard() {
     line(0,0,20,20);
     line(0,0,50,0);
   }
-  if (isFinished) { // draw next button if done
+  if (isFinished || levelMemory[diff][levelNo][0]) { // draw next button if done
     translate(XSHIFT*24,0);
     line(0,0,-50,0);
     line(0,0,-20,-20);
@@ -317,6 +344,7 @@ void drawBoard() {
   pushMatrix();
   translateZ(5);
   translateY(-3);
+  translate(0,-10); // for the sake of being symmetrical with navbar
   noFill();
   strokeWeight(2);
   setStroke(150);
@@ -545,6 +573,7 @@ void rotateBoard(boolean anti) {
 * Load level based on the currently stored levelNo
 */
 void loadLevel() {
+  isFinished = false;
   if (diff == 0) {
     level = Levels.getEasyBoard(levelNo);
     boardMin = Levels.getEasyInfo(levelNo)[0];
@@ -604,10 +633,10 @@ void mousePressed() {
     }
   } else if (screen == 1) {
     // clicked the left rotate button
-    if (abs(mouseX-(width/2-XSHIFT*6+15)) < 25 && abs(mouseY-(height*2/3+ZSHIFT*6+YSHIFT*3)) < 20) {
+    if (abs(mouseX-(width/2-XSHIFT*6+15)) < 25 && abs(mouseY-(height*2/3+ZSHIFT*6+YSHIFT*3-10)) < 20) {
       rotateBoard(false);
     // clicked the right rotate button
-    } else if (abs(mouseX-(width/2+XSHIFT*6-15)) < 25 && abs(mouseY-(height*2/3+ZSHIFT*6+YSHIFT*3)) < 20) {
+    } else if (abs(mouseX-(width/2+XSHIFT*6-15)) < 25 && abs(mouseY-(height*2/3+ZSHIFT*6+YSHIFT*3-10)) < 20) {
       rotateBoard(true);
     }
     
@@ -639,7 +668,7 @@ void mousePressed() {
         }
       }
     // clicked the next button
-    } else if (isFinished && abs(mouseX-(width/2+XSHIFT*12-25)) < 25 && abs(mouseY-NAV_HEIGHT) < 20) { 
+    } else if ((isFinished || levelMemory[diff][levelNo][0]) && abs(mouseX-(width/2+XSHIFT*12-25)) < 25 && abs(mouseY-NAV_HEIGHT) < 20) { 
       if (diff == 2 && levelNo == 9) { // reached end of prepared levels
         goMenu();
       } else {

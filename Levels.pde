@@ -422,7 +422,7 @@ static class Levels {
       case 0:
         return new int[] {7,15};
       case 1:
-        return new int[] {21,44};
+        return new int[] {16,44};
       case 2:
         return new int[] {24,108};
       case 3:
