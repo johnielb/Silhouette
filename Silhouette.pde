@@ -13,7 +13,7 @@ private int boardMax = 6;
 private int boardMin = 6;
 private int screen = 0;     // 0 for menu, 1 for game    
 private int diff = 0;       // 0 for easy, 1 medium, 2 hard
-private float hue = 150;
+private float hue = 180;
 private boolean[][][] levelMemory = new boolean[3][10][3]; // i=difficulty, j=level, k=completed/max/min
 private boolean isFinished = false;
 
@@ -108,15 +108,15 @@ void drawPgram(PVector o, PVector a, PVector b) {
 }
 
 void setBackground(int val) {
-  background(hue, 210-(val*2/3), 100+(val*2/3));
+  background(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
 void setFill(int val) {
-  fill(hue, 210-(val*2/3), 100+(val*2/3));
+  fill(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
 void setStroke(int val) {
-  stroke(hue, 210-(val*2/3), 100+(val*3/5));
+  stroke(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
 void setup() {
@@ -175,6 +175,17 @@ void drawMenu() {
   textFont(title);
   text("Silhouette.", width/2, topOffset);
   
+  // figure out score
+  int score = 0;
+  for (int diff=0; diff<3; diff++) {
+    for (int lvl=0; lvl<10; lvl++) {
+      if (levelMemory[diff][lvl][0]) score++;
+      if (levelMemory[diff][lvl][1]) score++;
+      if (levelMemory[diff][lvl][2]) score++;
+    }
+  }
+  textFont(game);
+  text("score    "+score, width/2, topOffset+150);
   
   // draw left ===================
   if (diff == 0) setFill(240);
@@ -226,18 +237,18 @@ void drawMenu() {
   drawLevelButton(9, LVL_MIDDLE, LVL_R3+125);
 }
 
-void drawLevelButton(int level, float x, float y) {
+void drawLevelButton(int i, float x, float y) {
   // if completed both
-  if (levelMemory[diff][level][2] && levelMemory[diff][level][1]) setFill(-100);
+  if (levelMemory[diff][i][2] && levelMemory[diff][i][1]) setFill(-100);
   // if one objective completed
-  else if (levelMemory[diff][level][2] || levelMemory[diff][level][1]) setFill(30); 
+  else if (levelMemory[diff][i][2] || levelMemory[diff][i][1]) setFill(30); 
   // if just completed
-  else if (levelMemory[diff][level][0]) setFill(100); 
+  else if (levelMemory[diff][i][0]) setFill(100); 
   // if unlocked
-  else if (level == 0 || levelMemory[diff][level-1][0]) setFill(150); 
+  else if (i == 0 || levelMemory[diff][i-1][0]) setFill(150); 
   // if locked
-  else if (!levelMemory[diff][level-1][0]) setFill(190); 
-  text(level+1, x, y);
+  else if (!levelMemory[diff][i-1][0]) setFill(190); 
+  text(i+1, x, y);
 }
 
 void drawBoard() {
@@ -248,24 +259,24 @@ void drawBoard() {
   textFont(game);
   float textY = height/5+20;
   
-  if (isFinished || levelMemory[diff][levelNo][0]) {
+  if (isFinished) {
     setFill(0); // if objective met, darken
     levelMemory[diff][levelNo][0] = true;
-  }
+  } else if (levelMemory[diff][levelNo][0]) setFill(100);
   else setFill(150);
   text(cubes, width/4, textY);
   
-  if ((isFinished && board.size() == boardMin) || levelMemory[diff][levelNo][1]) {
+  if (isFinished && board.size() == boardMin) {
     setFill(0);
     levelMemory[diff][levelNo][1] = true;
-  }
+  } else if (levelMemory[diff][levelNo][1]) setFill(100);
   else setFill(150);
   text(min, width/2, textY);
   
-  if ((isFinished && board.size() == boardMax) || levelMemory[diff][levelNo][2]) {
+  if (isFinished && board.size() == boardMax) {
     setFill(0);
     levelMemory[diff][levelNo][2] = true;
-  }
+  } else if (levelMemory[diff][levelNo][2]) setFill(100);
   else setFill(150);
   text(max, width*3/4, textY);
   
@@ -631,6 +642,7 @@ void mousePressed() {
     }
     
     if (levelNo > -1) { // if level selected, prepare game
+      if (levelNo > 0 && !levelMemory[diff][levelNo-1][0]) return;
       board.clear();
       loadLevel();
       screen = 1;
