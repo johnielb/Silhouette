@@ -108,15 +108,15 @@ void drawPgram(PVector o, PVector a, PVector b) {
 }
 
 void setBackground(int val) {
-  background(hue, 190-(val*2/3), 100+(val*2/3));
+  background(hue, 210-(val*2/3), 100+(val*2/3));
 }
 
 void setFill(int val) {
-  fill(hue, 190-(val*2/3), 100+(val*2/3));
+  fill(hue, 210-(val*2/3), 100+(val*2/3));
 }
 
 void setStroke(int val) {
-  stroke(hue, 190-(val*2/3), 100+(val*3/5));
+  stroke(hue, 210-(val*2/3), 100+(val*3/5));
 }
 
 void setup() {
@@ -227,10 +227,15 @@ void drawMenu() {
 }
 
 void drawLevelButton(int level, float x, float y) {
-  if (levelMemory[diff][level][2] && levelMemory[diff][level][1]) setFill(-100); // if completed both
-  else if (levelMemory[diff][level][2] || levelMemory[diff][level][1]) setFill(70); // if one objective completed
-  else if (levelMemory[diff][level][0]) setFill(120); // if just completed
-  else if (level == 0 || levelMemory[diff][level-1][0]) setFill(150); // if unlocked
+  // if completed both
+  if (levelMemory[diff][level][2] && levelMemory[diff][level][1]) setFill(-100);
+  // if one objective completed
+  else if (levelMemory[diff][level][2] || levelMemory[diff][level][1]) setFill(30); 
+  // if just completed
+  else if (levelMemory[diff][level][0]) setFill(100); 
+  // if unlocked
+  else if (level == 0 || levelMemory[diff][level-1][0]) setFill(150); 
+  // if locked
   else if (!levelMemory[diff][level-1][0]) setFill(190); 
   text(level+1, x, y);
 }

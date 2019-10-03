@@ -212,9 +212,9 @@ static class Levels {
       case 6:
         return new int[] {7,7};
       case 7:
-        return new int[] {15,41};
+        return new int[] {11,41};
       case 8:
-        return new int[] {6,10};
+        return new int[] {6,8};
       case 9:
         return new int[] {12,24};
       default:
@@ -430,13 +430,13 @@ static class Levels {
       case 4:
         return new int[] {16,46};
       case 5:
-        return new int[] {18,29};
+        return new int[] {15,29};
       case 6:
         return new int[] {13,27};
       case 7:
         return new int[] {16,38};
       case 8:
-        return new int[] {11,21};
+        return new int[] {14,21};
       case 9:
         return new int[] {10,25};
       default:
