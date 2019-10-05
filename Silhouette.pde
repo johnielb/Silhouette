@@ -27,7 +27,7 @@ private float LVL_R3;
 private float NAV_HEIGHT;
 
 // fonts
-PFont title, menu, game;
+PFont title, menu, game, tip;
 
 // HELPER METHODS ==========================================
 
@@ -107,20 +107,29 @@ void drawPgram(PVector o, PVector a, PVector b) {
   endShape(CLOSE);
 }
 
+/** Colourise background
+* @val greyscale value to colourise based on hue 
+*/
 void setBackground(int val) {
   background(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
+/** Colourise fill
+* @val greyscale value to colourise based on hue 
+*/
 void setFill(int val) {
   fill(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
+/** Colourise stroke
+* @val greyscale value to colourise based on hue 
+*/
 void setStroke(int val) {
   stroke(hue, 200-(val*2/3), 100+(val*2/3));
 }
 
 void setup() {
-  size(1300,900); // minimum 1000x900
+  size(1600,900); // minimum 1000x900
   strokeWeight(0.1);
   rectMode(CENTER);
   colorMode(HSB);
@@ -128,6 +137,7 @@ void setup() {
   title = createFont("thin.ttf",120);
   menu = createFont("light.ttf",84); 
   game = createFont("light.ttf",48); 
+  tip = createFont("light.ttf",32); 
   
   // set constants after width/height determined
   LVL_MIDDLE = width*3/4;
@@ -374,6 +384,16 @@ void drawBoard() {
   line(0, 0, 8, 10);
   arc(-30, 0, 60, 60, 0, HALF_PI);
   popMatrix();
+  
+  pushMatrix();
+  if (diff == 0 && levelNo == 0) {
+    if (!levelMemory[0][0][0]) doTutorial();
+    else if (isFinished) {
+      textFont(tip);
+      text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8);
+    }
+  }
+  popMatrix();
 }
 
 void drawBox(boolean isPlatform) {
@@ -400,6 +420,32 @@ void drawBox(boolean isPlatform) {
   // RIGHT
   setFill(160);
   drawPgram(new PVector(xScaled,zScaled*2), new PVector(xScaled, -zScaled), new PVector(0, yScaled-zScaled));
+}
+
+void doTutorial() {
+  PVector first = new PVector(0,1,0);
+  PVector second = new PVector(0,0,0);
+  if (!stack.contains(new BoxRecord(first,true)) && !board.contains(first)) {
+    board.add(0, first);
+  } else if (board.contains(first)) {
+    setFill(50);
+    noStroke();
+    text("right click", XSHIFT, -height/6);
+    drawPgram(new PVector(XSHIFT,-YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
+  } else if (stack.contains(new BoxRecord(first,true)) && !stack.contains(new BoxRecord(second,false))) {
+    setFill(50);
+    noStroke();
+    text("left click", XSHIFT, -height/6);
+    drawPgram(new PVector(XSHIFT,YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
+  } else if (!isFinished) {
+    textFont(tip);
+    float tipY = -height*2/3+NAV_HEIGHT/3;
+    text("rotate", -XSHIFT*7, YSHIFT*4.35);
+    text("rotate", XSHIFT*9, YSHIFT*4.35);
+    text("menu", XSHIFT, tipY);
+    text("clear", -XSHIFT*2, tipY);
+    text("undo", XSHIFT*4, tipY);
+  }
 }
 
 /**
