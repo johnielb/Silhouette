@@ -6,7 +6,7 @@ private final float YSHIFT = 73*scale;
 private final int GRID_SIZE = 6;
 
 private ArrayList<PVector> board = new ArrayList<PVector>();     // ordered based on viewing z-position
-private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>(); // ordered based on creation
+private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>(); // ordered based on creation, tells us if move was add/remove
 private int[][][] level;    // answer board
 private int levelNo = -1;
 private int boardMax = 6;
@@ -275,21 +275,21 @@ void drawBoard() {
     setFill(0); // if objective met, darken
     levelMemory[diff][levelNo][0] = true;
   } else if (levelMemory[diff][levelNo][0]) setFill(100);
-  else setFill(150);
+  else setFill(190);
   text(cubes, width/4, textY);
   
   if (isFinished && board.size() == boardMin) {
     setFill(0);
     levelMemory[diff][levelNo][1] = true;
   } else if (levelMemory[diff][levelNo][1]) setFill(100);
-  else setFill(150);
+  else setFill(190);
   text(min, width/2, textY);
   
   if (isFinished && board.size() == boardMax) {
     setFill(0);
     levelMemory[diff][levelNo][2] = true;
   } else if (levelMemory[diff][levelNo][2]) setFill(100);
-  else setFill(150);
+  else setFill(190);
   text(max, width*3/4, textY);
   
   
@@ -430,10 +430,10 @@ void drawBox(boolean isPlatform) {
 }
 
 /** Tutorial for first level if it hasn't been completed
-* 1. Add incorrect block to demonstrate removal
-* 2. Point to where to add the first block
-* 3. Show what all the buttons do
-* 4. When finished, show the next button
+* 1 and 2. Add incorrect block to demonstrate removal, wait until removed
+* 3. Point to where to add the first block
+* 4. Show what all the buttons do
+* 5. When finished, show the next button
 */
 void doTutorial() {
   PVector first = new PVector(0,1,0);
@@ -697,7 +697,7 @@ void mousePressed() {
     }
     
     if (levelNo > -1) { // if level selected, prepare game
-      if (levelNo > 0 && !levelMemory[diff][levelNo-1][0]) return;
+      if (levelNo > 0 && !levelMemory[diff][levelNo-1][0]) return; // if the previous level hasn't been unlocked
       board.clear();
       loadLevel();
       screen = 1;
