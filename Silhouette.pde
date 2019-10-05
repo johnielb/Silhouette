@@ -389,13 +389,11 @@ void drawBoard() {
   
   pushMatrix();
   if (diff == 0) { // helpful hints for certain easy levels
+    textFont(tip);
     setFill(20);
     if (levelNo == 0) {                        // if first level
       if (!levelMemory[0][0][0]) doTutorial(); // and not completed, start tutorial
-      else if (isFinished) {                   // otherwise, show next button
-        textFont(tip);
-        text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8);
-      }
+      else if (isFinished) text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8); // otherwise, show next button
     } else if (levelNo == 2 && !levelMemory[0][2][0]) { // if second level
       textFont(tip);
       text("rotate", -XSHIFT*7, YSHIFT*4.35);           // show rotate buttons
@@ -438,7 +436,6 @@ void drawBox(boolean isPlatform) {
 * 4. When finished, show the next button
 */
 void doTutorial() {
-  textFont(tip);
   PVector first = new PVector(0,1,0);
   PVector second = new PVector(0,0,0);
   if (!stack.contains(new BoxRecord(first,true)) && !board.contains(first)) {
