@@ -129,7 +129,7 @@ void setStroke(int val) {
 }
 
 void setup() {
-  size(1600,900); // minimum 1000x900
+  size(1300,900); // minimum 1000x900
   strokeWeight(0.1);
   rectMode(CENTER);
   colorMode(HSB);
@@ -210,14 +210,16 @@ void drawMenu() {
   
   // draw difficulty selector, darken currently selected
   textFont(menu);
-  if (diff == 0) setFill(20);
-  else setFill(100);
+  if (diff == 0) setFill(0);
+  else setFill(190);
   text("Easy", width/4, height/2);
-  if (diff == 1) setFill(20);
-  else setFill(100);
+  
+  if (diff == 1) setFill(0);
+  else setFill(190);
   text("Medium", width/4, height/2+150);
-  if (diff == 2) setFill(20);
-  else setFill(100);
+  
+  if (diff == 2) setFill(0);
+  else setFill(190);
   text("Hard", width/4, height/2+300);
   
   
@@ -386,11 +388,18 @@ void drawBoard() {
   popMatrix();
   
   pushMatrix();
-  if (diff == 0 && levelNo == 0) {
-    if (!levelMemory[0][0][0]) doTutorial();
-    else if (isFinished) {
+  if (diff == 0) { // helpful hints for certain easy levels
+    setFill(20);
+    if (levelNo == 0) {                        // if first level
+      if (!levelMemory[0][0][0]) doTutorial(); // and not completed, start tutorial
+      else if (isFinished) {                   // otherwise, show next button
+        textFont(tip);
+        text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8);
+      }
+    } else if (levelNo == 2 && !levelMemory[0][2][0]) { // if second level
       textFont(tip);
-      text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8);
+      text("rotate", -XSHIFT*7, YSHIFT*4.35);           // show rotate buttons
+      text("rotate", XSHIFT*9, YSHIFT*4.35);
     }
   }
   popMatrix();
@@ -422,26 +431,28 @@ void drawBox(boolean isPlatform) {
   drawPgram(new PVector(xScaled,zScaled*2), new PVector(xScaled, -zScaled), new PVector(0, yScaled-zScaled));
 }
 
+/** Tutorial for first level if it hasn't been completed
+* 1. Add incorrect block to demonstrate removal
+* 2. Point to where to add the first block
+* 3. Show what all the buttons do
+* 4. When finished, show the next button
+*/
 void doTutorial() {
+  textFont(tip);
   PVector first = new PVector(0,1,0);
   PVector second = new PVector(0,0,0);
   if (!stack.contains(new BoxRecord(first,true)) && !board.contains(first)) {
     board.add(0, first);
   } else if (board.contains(first)) {
-    setFill(50);
     noStroke();
-    text("right click", XSHIFT, -height/6);
+    text("right click", XSHIFT, -height/9);
     drawPgram(new PVector(XSHIFT,-YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
   } else if (stack.contains(new BoxRecord(first,true)) && !stack.contains(new BoxRecord(second,false))) {
-    setFill(50);
     noStroke();
-    text("left click", XSHIFT, -height/6);
+    text("left click", XSHIFT, -height/15);
     drawPgram(new PVector(XSHIFT,YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
   } else if (!isFinished) {
-    textFont(tip);
     float tipY = -height*2/3+NAV_HEIGHT/3;
-    text("rotate", -XSHIFT*7, YSHIFT*4.35);
-    text("rotate", XSHIFT*9, YSHIFT*4.35);
     text("menu", XSHIFT, tipY);
     text("clear", -XSHIFT*2, tipY);
     text("undo", XSHIFT*4, tipY);
@@ -489,7 +500,7 @@ boolean drawAnswers() {
       if (level[0][y][z] == 1) {
         if (!found) isCorrect=false;
         drawPgram(new PVector(0,0), new PVector(-XSHIFT, ZSHIFT), new PVector(0, -YSHIFT));
-      } else if (found) { // if there's a block where we don't want one, draw X
+      } else if (found) { // if there's a box where we don't want one, draw X
         isCorrect = false;
         strokeWeight(1);
         line(0, 0, -XSHIFT, ZSHIFT-YSHIFT);
@@ -550,10 +561,11 @@ boolean drawAnswers() {
 }
 
 /**
-* Do one swap of PVector oldPos to newPos, putting it inside a temporary board List
-* e.g. ..y. x -> y clockwise
-*      x..b a -> b anticlockwise
-*      .ji. i -> j clockwise
+* Do one swap of PVector oldPos to newPos, 
+* putting it inside a temporary board List
+* e.g. ..y.     x -> y clockwise
+*      x..b     a -> b anticlockwise
+*      .ji.     i -> j clockwise
 *      ..a.
 */
 void singleRotate(PVector oldPos, PVector newPos, ArrayList<PVector> temp) {
@@ -566,7 +578,7 @@ void singleRotate(PVector oldPos, PVector newPos, ArrayList<PVector> temp) {
 
 /** Rotates construction and answer board */
 void rotateBoard(boolean anti) {
-  // rotate blocks on platform
+  // rotate boxes on platform
   int n = GRID_SIZE-1;
   ArrayList<PVector> tempBoard = new ArrayList<PVector>();
   for (int x=0; x<GRID_SIZE/2; x++) {
@@ -745,6 +757,7 @@ void mousePressed() {
       }
     }
     
+    // determine if a box/platform was clicked
     PVector point = new PVector(mouseX-width/2, mouseY-(height*2/3+YSHIFT));
     for (int i=GRID_SIZE; i>=0; i--) {
       for (int j=GRID_SIZE; j>=0; j--) {
