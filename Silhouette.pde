@@ -1,21 +1,30 @@
 import java.util.*;
+
+// for sizing
 private final float scale = 0.65;
 private final float XSHIFT = 57*scale;
 private final float ZSHIFT = 21*scale;
 private final float YSHIFT = 73*scale;
 private final int GRID_SIZE = 6;
 
+// for level displaying
 private ArrayList<PVector> board = new ArrayList<PVector>();     // ordered based on viewing z-position
 private ArrayList<BoxRecord> stack = new ArrayList<BoxRecord>(); // ordered based on creation, tells us if move was add/remove
 private int[][][] level;    // answer board
+private int diff = 0;       // 0 for easy, 1 medium, 2 hard
 private int levelNo = -1;
 private int boardMax = 6;
 private int boardMin = 6;
-private int screen = 0;     // 0 for menu, 1 for game    
-private int diff = 0;       // 0 for easy, 1 medium, 2 hard
-private float hue = 180;
 private boolean[][][] levelMemory = new boolean[3][10][3]; // i=difficulty, j=level, k=completed/max/min
 private boolean isFinished = false;
+
+// for screen displaying
+private int screen = 0;     // 0 for menu, 1 for game    
+private float hue = 180;
+
+// for flashing 
+private boolean decreaseFlash = false;
+private int fillFlash = 20;
 
 // constants that determine where buttons are placed
 private float LVL_MIDDLE;
@@ -263,36 +272,7 @@ void drawLevelButton(int i, float x, float y) {
   text(i+1, x, y);
 }
 
-void drawBoard() {
-  // draw current objectives/board info ======
-  String cubes = "cubes   "+board.size();
-  String min = "min   "+boardMin;
-  String max = "max   "+boardMax;
-  textFont(game);
-  float textY = height/5+20;
-  
-  if (isFinished) {
-    setFill(0); // if objective met, darken
-    levelMemory[diff][levelNo][0] = true;
-  } else if (levelMemory[diff][levelNo][0]) setFill(100);
-  else setFill(190);
-  text(cubes, width/4, textY);
-  
-  if (isFinished && board.size() == boardMin) {
-    setFill(0);
-    levelMemory[diff][levelNo][1] = true;
-  } else if (levelMemory[diff][levelNo][1]) setFill(100);
-  else setFill(190);
-  text(min, width/2, textY);
-  
-  if (isFinished && board.size() == boardMax) {
-    setFill(0);
-    levelMemory[diff][levelNo][2] = true;
-  } else if (levelMemory[diff][levelNo][2]) setFill(100);
-  else setFill(190);
-  text(max, width*3/4, textY);
-  
-  
+void drawBoard() {  
   // draw navigation bar ====================
   noFill();
   strokeWeight(2);
@@ -390,7 +370,14 @@ void drawBoard() {
   pushMatrix();
   if (diff == 0) { // helpful hints for certain easy levels
     textFont(tip);
-    setFill(20);
+    
+    // flash the tips by decreasing/increasing fill
+    if (decreaseFlash) fillFlash -= 5;
+    else fillFlash += 5;
+    setFill(fillFlash);
+    if (fillFlash > 150) decreaseFlash = true;
+    else if (fillFlash < 20) decreaseFlash = false;
+    
     if (levelNo == 0) {                        // if first level
       if (!levelMemory[0][0][0]) doTutorial(); // and not completed, start tutorial
       else if (isFinished) text("next", XSHIFT*10, -height*2/3+NAV_HEIGHT-8); // otherwise, show next button
@@ -401,6 +388,35 @@ void drawBoard() {
     }
   }
   popMatrix();
+  resetMatrix();
+  
+  // draw current objectives/board info ======
+  String cubes = "cubes   "+board.size();
+  String min = "min   "+boardMin;
+  String max = "max   "+boardMax;
+  float textY = height/5+20;
+  textFont(game);
+  
+  if (isFinished) {
+    setFill(0); // if objective met, darken
+    levelMemory[diff][levelNo][0] = true;
+  } else if (levelMemory[diff][levelNo][0]) setFill(100);
+  else setFill(190);
+  text(cubes, width/4, textY);
+  
+  if (isFinished && board.size() == boardMin) {
+    setFill(0);
+    levelMemory[diff][levelNo][1] = true;
+  } else if (levelMemory[diff][levelNo][1]) setFill(100);
+  else setFill(190);
+  text(min, width/2, textY);
+  
+  if (isFinished && board.size() == boardMax) {
+    setFill(0);
+    levelMemory[diff][levelNo][2] = true;
+  } else if (levelMemory[diff][levelNo][2]) setFill(100);
+  else setFill(190);
+  text(max, width*3/4, textY);
 }
 
 void drawBox(boolean isPlatform) {
@@ -446,7 +462,7 @@ void doTutorial() {
     drawPgram(new PVector(XSHIFT,-YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
   } else if (stack.contains(new BoxRecord(first,true)) && !stack.contains(new BoxRecord(second,false))) {
     noStroke();
-    text("left click", XSHIFT, -height/15);
+    text("left click", XSHIFT, 0);
     drawPgram(new PVector(XSHIFT,YSHIFT+ZSHIFT/2), new PVector(-XSHIFT/2, ZSHIFT/2), new PVector(XSHIFT/2, ZSHIFT/2));
   } else if (!isFinished) {
     float tipY = -height*2/3+NAV_HEIGHT/3;
